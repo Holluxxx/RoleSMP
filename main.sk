@@ -1,0 +1,34 @@
+##################################################
+# RoleSMP V2 -- main.sk
+##################################################
+# This is a documentation/entry-point file only.
+# Skript auto-loads every .sk file under scripts/
+# (including subfolders), so there is no explicit
+# "import" step -- just make sure all files below
+# are present in your scripts/ folder:
+#
+# scripts/
+#  +- main.sk                (this file)
+#  +- core/
+#  |   +- setup.sk            global options + startup init
+#  |   +- data.sk             variable layout documentation
+#  |   +- recipes.sk          Role Ascension Scroll recipe + use
+#  +- systems/
+#  |   +- roles.sk            role assignment, reset, join, passive stat effects
+#  |   +- cooldowns.sk        cooldown/charge cleanup on death+quit, stun lock
+#  +- features/
+#  |   +- abilities.sk        active role abilities (Farmer/Miner/Scout/Warrior/Archer)
+#  |   +- combat.sk           damage interactions (Archer dmg halving, fire/poison arrows)
+#  |   +- leveling.sk         level cost curve + /upgrade logic
+#  +- gui/
+#  |   +- rolemenu.sk         role-select GUI
+#  |   +- levelgui.sk         per-role level chart GUI
+#  +- commands/
+#      +- player.sk           /roles, /upgrade, tab completion, help text
+#      +- admin.sk            /resetcooldowns, /deletelock, /setrolelevel
+#
+# NOTE ON {prefix}: vanilla Skript "options:" blocks are
+# local to the file they're declared in, so they can't be
+# shared across split files. This split replaces {prefix}
+# with the persistent variable {prefix}, set once in
+# core/setup.sk on load.
