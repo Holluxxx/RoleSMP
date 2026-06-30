@@ -4,7 +4,7 @@
 on load:
     set {_book} to book named "&d&lBook of Reawakening"
     set lore of {_book} to "&7A rare book told to hold the knowledge" and "&7to change your role" and "" and "&5Right-click to use"
-    register new shaped recipe for {_book} using enchanted golden apple, elytra, enchanted golden apple, beacon, book, beacon, enchanted golden apple, elytra and enchanted golden apple with id "book_of_reawakening'
+    register new shaped recipe for {_book} using enchanted golden apple, elytra, enchanted golden apple, beacon, book, beacon, enchanted golden apple, elytra and enchanted golden apple with id "book_of_reawakening"
 
     set {_scroll} to paper named "&d&lRole Ascension Scroll"
     set lore of {_scroll} to "&7A rare scroll imbued with the" and "&7power to ascend your role." and "" and "&5Right-click to use"
@@ -14,7 +14,7 @@ on right click holding paper:
     if player's tool is paper:
         if name of player's tool is "&d&lRole Ascension Scroll":
             if {role::%uuid of player%} is not set:
-                send "{prefix}&cYou don't have a role yet!" to player
+                send "%{prefix}%&cYou don't have a role yet!" to player
                 stop
 
             set {_lvl} to {roleLevel::%uuid of player%}
@@ -22,7 +22,7 @@ on right click holding paper:
                 set {_lvl} to 0
 
             if {_lvl} >= 10:
-                send "{prefix}&6Your role is already at max level!" to player
+                send "%{prefix}%&6Your role is already at max level!" to player
                 stop
 
             set {_nextLvl} to {_lvl} + 1
@@ -30,13 +30,13 @@ on right click holding paper:
 
             remove 1 paper named "&d&lRole Ascension Scroll" from player's inventory
 
-            send "{prefix}&d&lASCENSION SCROLL USED!" to player
-            send "{prefix}&aUpgraded to &e&lLevel %{_nextLvl}%&a!" to player
+            send "%{prefix}%&d&lASCENSION SCROLL USED!" to player
+            send "%{prefix}%&aUpgraded to &e&lLevel %{_nextLvl}%&a!" to player
             play sound "entity.player.levelup" at player
             send title "&d&lASCENSION!" with subtitle "&7Your %{role::%uuid of player%}% is now &aLevel %{_nextLvl}%" to player
 
             if {_nextLvl} >= 10:
-                send "{prefix}&6&lYou have reached &d&lMAX LEVEL&6&l for your role!" to player
+                send "%{prefix}%&6&lYou have reached &d&lMAX LEVEL&6&l for your role!" to player
                 send "" to all players
                 send "&5✦ &d&lMASTERY ACHIEVEMENT&5 ✦" to all players
                 send "&d%name of player% &7has become a &6MASTER &7of the" to all players
@@ -46,36 +46,42 @@ on right click holding paper:
                 play sound "minecraft:entity.ender_dragon.growl" to all players
 
 on right click holding book:
-    if player's tool is paper:
+    if player's tool is book:
         if name of player's tool is "&d&lBook of Reawakening":
             if {role::%uuid of player%} is not set:
-                send "{prefix}&cYou don't have a role to purge!" to player
+                send "%{prefix}%&cYou don't have a role to purge!" to player
+                play sound "minecraft:entity.silverfish.hurt" to player
                 stop
+                
+            delete {role::%uuid of player%}
 
-            set {_lvl} to {roleLevel::%uuid of player%}
-            if {_lvl} is not set:
-                set {_lvl} to 0
-
-            if {_lvl} >= 10:
-                send "{prefix}&6Your role is already at max level!" to player
-                stop
-
-            set {_nextLvl} to {_lvl} + 1
-            set {roleLevel::%uuid of player%} to {_nextLvl}
-
-            remove 1 paper named "&d&lRole Ascension Scroll" from player's inventory
+            remove 1 book named "&d&lBook of Reawakening" from player's inventory
 			
 			# client msgs
-            send "{prefix}&d&lBook of Reawakening!" to player
-            send "{prefix}&7Your role has been cleared! do /roles set" to player
+            send "%{prefix}%&d&lBook of Reawakening!" to player
+            send "%{prefix}%&7Your role has been cleared! do /roles set" to player
             send title "&d&lREAWAKENING!" with subtitle "&7Your role has been cleared! do /roles set" to player
 			
 			# public broadcase
-            send "{prefix}&b%name of player% &7has &d&l&nReawakened&7!" to all players
+            send "%{prefix}%&b%name of player% &7has &d&l&nReawakened&7!" to all players
             
             # sound
-            play sound "ui.toast.challenge_complete" at player
+            play sound "ui.toast.challenge_complete" to player
             play sound "minecraft:entity.lightning_bolt.thunder" to all players
             
             # dramatic lightning
             summon lightning bolt at player
+            wait 10 ticks
+            loop blocks in radius 3 around player:
+                if loop-block is fire:
+                    set block at location of loop-block to air
+            wait 5 ticks
+            heal player
+            extinguish player
+            
+# Give Recipes
+
+every 1 tick:
+    unlock recipe "book_of_reawakening" for all players
+    wait 1 tick
+    unlock recipe "role_ascension_scroll" for all players
