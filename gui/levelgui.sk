@@ -1,0 +1,243 @@
+##################################################
+# GUI: LEVEL GUI -- per-role level chart
+##################################################
+
+##################################################
+# LEVEL GUI BUILDER
+##################################################
+function openLevelGUI(p: player):
+    set {_role} to {role::%uuid of {_p}%}
+    set {_lvl} to {roleLevel::%uuid of {_p}%}
+    if {_lvl} is not set:
+        set {_lvl} to 0
+
+    set {_gui} to chest inventory with 6 rows named "&8Level Chart -- &a%{_role}%"
+
+    loop 54 times:
+        set slot (loop-number - 1) of {_gui} to gray stained glass pane named " "
+
+    # Level indicator slots across row 1 (slots 0-9)
+    loop 10 times:
+        set {_i} to loop-number
+        set {_slot} to loop-number - 1
+        set {_cost} to levelCost({_i})
+
+        if {_i} <= {_lvl}:
+            set slot {_slot} of {_gui} to lime stained glass pane named "&a&lLevel %{_i}% &8[UNLOCKED]" with lore "&7Cost: &e%{_cost}% XP Levels" and "&a- You have this level"
+        else if {_i} is {_lvl} + 1:
+            set slot {_slot} of {_gui} to yellow stained glass pane named "&e&lLevel %{_i}% &8[NEXT]" with lore "&7Cost: &e%{_cost}% XP Levels" and "&7Use /upgrade to unlock"
+        else:
+            set slot {_slot} of {_gui} to red stained glass pane named "&c&lLevel %{_i}% &8[LOCKED]" with lore "&7Cost: &e%{_cost}% XP Levels" and "&cUnlock previous levels first"
+
+    # Separator row 2 (slots 9-17)
+    loop 9 times:
+        set slot (8 + loop-number) of {_gui} to black stained glass pane named " "
+
+    # Role-specific upgrade cards
+    if {_role} is "Archer":
+        buildArcherChart({_gui}, {_lvl})
+    else if {_role} is "Scout":
+        buildScoutChart({_gui}, {_lvl})
+    else if {_role} is "Miner":
+        buildMinerChart({_gui}, {_lvl})
+    else if {_role} is "Warrior":
+        buildWarriorChart({_gui}, {_lvl})
+    else if {_role} is "Farmer":
+        buildFarmerChart({_gui}, {_lvl})
+
+    open {_gui} to {_p}
+
+##################################################
+# PER-ROLE LEVEL CHARTS + GENERIC RENDERER
+##################################################
+function buildArcherChart(gui: inventory, lvl: number):
+    set {_d1} to "Arrow velocity x1.0, Pierce I, arrows fly further"
+    set {_d2} to "Arrow velocity x1.1, Pierce II"
+    set {_d3} to "Arrow velocity x1.2, Focus charges faster"
+    set {_d4} to "Arrow velocity x1.3, Pierce III"
+    set {_d5} to "Arrow velocity x1.45, Focus max mult x3.75"
+    set {_d6} to "Arrow velocity x1.6, Infinity on Focus shots"
+    set {_d7} to "Arrow velocity x1.8, Pierce IV"
+    set {_d8} to "Arrow velocity x2.1, Focus mult x5.0"
+    set {_d9} to "Arrow velocity x2.4, Arrows set targets on fire"
+    set {_d10} to "MAX: velocity x3.0, Poison on Focus shots, max drop reduction"
+
+    set {_v1} to "??? - Arrows get a bit sharper"
+    set {_v2} to "??? - The arrow yearns for speed"
+    set {_v3} to "??? - Focus sharpens"
+    set {_v4} to "??? - Pierce the impossible"
+    set {_v5} to "??? - Power beyond a normal bow"
+    set {_v6} to "??? - Legends speak of infinite quivers"
+    set {_v7} to "??? - The arrow pierces all"
+    set {_v8} to "??? - Focus becomes your best asset"
+    set {_v9} to "??? - Your arrows carry the mark of fire"
+    set {_v10} to "??? - Ascended Marksman"
+
+    buildGenericChart({_gui}, {_lvl}, {_d1}, {_d2}, {_d3}, {_d4}, {_d5}, {_d6}, {_d7}, {_d8}, {_d9}, {_d10}, {_v1}, {_v2}, {_v3}, {_v4}, {_v5}, {_v6}, {_v7}, {_v8}, {_v9}, {_v10})
+
+##################################################
+# SCOUT LEVEL CHART
+##################################################
+function buildScoutChart(gui: inventory, lvl: number):
+    set {_d1} to "Momentum cap 110, Dash threshold 45, -30%% drain on dash"
+    set {_d2} to "Momentum cap 120, Dash power +15%%"
+    set {_d3} to "Armor weight thresholds relaxed, Jump boost +1"
+    set {_d4} to "Momentum cap 130, Dash leaves speed trail"
+    set {_d5} to "Momentum cap 140, -20%% drain on dash"
+    set {_d6} to "Armor weight ignored for speed"
+    set {_d7} to "Momentum cap 150, 10 max hearts"
+    set {_d8} to "Momentum cap 160, Sprint builds momentum 2x faster"
+    set {_d9} to "Momentum cap 175, Max speed increased"
+    set {_d10} to "MAX: Momentum cap 200, Supersonic Dash, -10%% drain on dash"
+
+    set {_v1} to "??? - The wind carries your step"
+    set {_v2} to "??? - Your leaps grow further"
+    set {_v3} to "??? - You feel your body grow lighter"
+    set {_v4} to "??? - Your max speed will grow"
+    set {_v5} to "??? - Momentum becomes reflex"
+    set {_v6} to "??? - Weight is just a number now"
+    set {_v7} to "??? - They can't catch what they can't see"
+    set {_v8} to "??? - Speed breeds more speed"
+    set {_v9} to "??? - Breaking limits"
+    set {_v10} to "??? - The Fastest Runner"
+
+    buildGenericChart({_gui}, {_lvl}, {_d1}, {_d2}, {_d3}, {_d4}, {_d5}, {_d6}, {_d7}, {_d8}, {_d9}, {_d10}, {_v1}, {_v2}, {_v3}, {_v4}, {_v5}, {_v6}, {_v7}, {_v8}, {_v9}, {_v10})
+
+##################################################
+# MINER LEVEL CHART
+##################################################
+function buildMinerChart(gui: inventory, lvl: number):
+    set {_d1} to "Mining speed x1.7, Quake tunnel wider"
+    set {_d2} to "Mining speed x1.85, Debris drop chance increased"
+    set {_d3} to "Mining speed x2.0, Quake dash 20 ticks"
+    set {_d4} to "Mining speed x2.2, Quake breaks harder stone"
+    set {_d5} to "Mining speed x2.4, Quake cooldown 35s, Removes weakness"
+    set {_d6} to "Mining speed x2.6, All ores drop double, debris always drops 2"
+    set {_d7} to "Mining speed x2.8, Quake radius 4 blocks, cooldown 25s"
+    set {_d8} to "Mining speed x3.0, All ores auto-smelt while mining"
+    set {_d9} to "Mining speed x3.3, Quake cooldown 15s, Debris always drops 3"
+    set {_d10} to "MAX: Mining speed x4.5, Debris drops 4 netherite scrap"
+
+    set {_v1} to "??? - The rock listens to you now"
+    set {_v2} to "??? - Ancient debris isn't so rare anymore"
+    set {_v3} to "??? - The tunnel gets longer"
+    set {_v4} to "??? - Even obsidian fears the charge"
+    set {_v5} to "??? - The caves conditions you"
+    set {_v6} to "??? - The netherite practically falls out"
+    set {_v7} to "??? - A cavern collapses in your wake"
+    set {_v8} to "??? - The ore recognizes you"
+    set {_v9} to "??? - Limitless tunnels, endless riches"
+    set {_v10} to "??? - Master of the Deep"
+
+    buildGenericChart({_gui}, {_lvl}, {_d1}, {_d2}, {_d3}, {_d4}, {_d5}, {_d6}, {_d7}, {_d8}, {_d9}, {_d10}, {_v1}, {_v2}, {_v3}, {_v4}, {_v5}, {_v6}, {_v7}, {_v8}, {_v9}, {_v10})
+
+##################################################
+# WARRIOR LEVEL CHART
+##################################################
+function buildWarriorChart(gui: inventory, lvl: number):
+    set {_d1} to "Strength I, Warcry radius 55"
+    set {_d2} to "Strength II (passive max), Warcry debuff 12s"
+    set {_d3} to "Warcry ground pound radius 8"
+    set {_d4} to "Warcry also applies blindness"
+    set {_d5} to "Warcry roar radius 65, Warcry gives Strength III"
+    set {_d6} to "Warcry cooldown 210s, shockwave deals 4 dmg"
+    set {_d7} to "Warcry gives Resistance I"
+    set {_d8} to "Warcry cooldown 170s, Ground pound launches higher"
+    set {_d9} to "Warcry stun duration 8s, Warcry gives Strength IV"
+    set {_d10} to "MAX: Warcry cooldown 120s, Full Berserker Roar"
+
+    set {_v1} to "??? - The ground shakes a little harder"
+    set {_v2} to "??? - Your voice carries bloodshed"
+    set {_v3} to "??? - The shockwave asks permission from no one"
+    set {_v4} to "??? - They see darkness before they see you"
+    set {_v5} to "??? - A roar felt in the chest"
+    set {_v6} to "??? - The cooldown shrinks. The damage doesn't."
+    set {_v7} to "??? - You hit back. Hard."
+    set {_v8} to "??? - The sky isn't high enough"
+    set {_v9} to "??? - Frozen in terror. Literally."
+    set {_v10} to "??? - The Warlord Ascended"
+
+    buildGenericChart({_gui}, {_lvl}, {_d1}, {_d2}, {_d3}, {_d4}, {_d5}, {_d6}, {_d7}, {_d8}, {_d9}, {_d10}, {_v1}, {_v2}, {_v3}, {_v4}, {_v5}, {_v6}, {_v7}, {_v8}, {_v9}, {_v10})
+
+##################################################
+# FARMER LEVEL CHART
+##################################################
+function buildFarmerChart(gui: inventory, lvl: number):
+    set {_d1} to "Bonemeal starts 1x1, wheat drops 6"
+    set {_d2} to "Bonemeal radius 1.5, carrots drop 7"
+    set {_d3} to "Bonemeal radius 2.0, potatoes drop 6"
+    set {_d4} to "Bonemeal radius 2.5, beetroot drops 6"
+    set {_d5} to "Bonemeal radius 3.0, nether wart drops 9, Removes weakness"
+    set {_d6} to "Farm animal drops have 30%% double chance, Removes slowness"
+    set {_d7} to "Bonemeal radius 4.0, all crop drops +1"
+    set {_d8} to "Farm animal drops 45%% double, 25%% triple chance"
+    set {_d9} to "Bonemeal radius 5.0, seed drops doubled, 10 max hearts"
+    set {_d10} to "MAX: Bonemeal radius 6.0, all farm animal drops tripled"
+
+    set {_v1} to "??? - The crops grow taller"
+    set {_v2} to "??? - The seeds know your name"
+    set {_v3} to "??? - Roots spread farther than you planted"
+    set {_v4} to "??? - Even nether soil bends to your will"
+    set {_v5} to "??? - A radius that reaches beyond the garden"
+    set {_v6} to "??? - The cattle give more willingly now"
+    set {_v7} to "??? - Every block bursts with life"
+    set {_v8} to "??? - Triple what you never deserved"
+    set {_v9} to "??? - Nature enrichens you"
+    set {_v10} to "??? - The Grand Cultivator"
+
+    buildGenericChart({_gui}, {_lvl}, {_d1}, {_d2}, {_d3}, {_d4}, {_d5}, {_d6}, {_d7}, {_d8}, {_d9}, {_d10}, {_v1}, {_v2}, {_v3}, {_v4}, {_v5}, {_v6}, {_v7}, {_v8}, {_v9}, {_v10})
+
+##################################################
+# GENERIC CHART RENDERER
+##################################################
+function buildGenericChart(gui: inventory, lvl: number, d1: string, d2: string, d3: string, d4: string, d5: string, d6: string, d7: string, d8: string, d9: string, d10: string, v1: string, v2: string, v3: string, v4: string, v5: string, v6: string, v7: string, v8: string, v9: string, v10: string):
+
+    set {_descs::1} to {_d1}
+    set {_descs::2} to {_d2}
+    set {_descs::3} to {_d3}
+    set {_descs::4} to {_d4}
+    set {_descs::5} to {_d5}
+    set {_descs::6} to {_d6}
+    set {_descs::7} to {_d7}
+    set {_descs::8} to {_d8}
+    set {_descs::9} to {_d9}
+    set {_descs::10} to {_d10}
+
+    set {_vagus::1} to {_v1}
+    set {_vagus::2} to {_v2}
+    set {_vagus::3} to {_v3}
+    set {_vagus::4} to {_v4}
+    set {_vagus::5} to {_v5}
+    set {_vagus::6} to {_v6}
+    set {_vagus::7} to {_v7}
+    set {_vagus::8} to {_v8}
+    set {_vagus::9} to {_v9}
+    set {_vagus::10} to {_v10}
+
+    loop 10 times:
+        set {_i} to loop-number
+        if {_i} <= 5:
+            set {_slot} to 19 + {_i}
+        else:
+            set {_slot} to 23 + {_i}
+
+        if {_i} <= {_lvl}:
+            set slot {_slot} of {_gui} to lime dye named "&a&lLevel %{_i}%" with lore "&7%{_descs::%{_i}%}%" and "" and "&a- UNLOCKED"
+        else if {_i} is {_lvl} + 1:
+            set slot {_slot} of {_gui} to gold nugget named "&e&lLevel %{_i}% &8(NEXT)" with lore "&7%{_descs::%{_i}%}%" and "" and "&eUse /upgrade to unlock" and "&7Cost: &e%levelCost({_i})% XP Levels"
+        else:
+            set slot {_slot} of {_gui} to barrier named "&c&lLevel %{_i}% &8[LOCKED]" with lore "&8%{_vagus::%{_i}%}%" and "" and "&cUnlock level %({_i} - 1)% first"
+
+    if {_lvl} >= 10:
+        set slot 49 of {_gui} to nether star named "&6&lMAX LEVEL" with lore "&7Your role is fully upgraded!" and "" and "&6You are at peak power."
+    else:
+        set {_nc} to levelCost({_lvl} + 1)
+        set slot 49 of {_gui} to experience bottle named "&eCurrent Progress" with lore "&7Level: &a%{_lvl}%&8/&a10" and "&7Next Level Cost: &e%{_nc}% XP Levels" and "" and "&7Use &a/upgrade &7to advance."
+
+##################################################
+# LEVEL GUI -- CLICK HANDLER (view-only)
+##################################################
+on inventory click:
+    if name of event-inventory contains "Level Chart":
+        cancel event
+        stop

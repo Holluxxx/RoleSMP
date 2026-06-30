@@ -1,0 +1,84 @@
+##################################################
+# GUI: ROLE MENU -- role-select GUI
+##################################################
+
+##################################################
+# ROLE GUI (6 rows)
+##################################################
+function openRoleGUI(p: player):
+    set {_gui} to chest inventory with 6 rows named "Choose Your Role"
+
+    set slot 0 of {_gui} to wheat named "&a&lFarmer" with lore "&7A skilled crop grower and trader."
+    set slot 2 of {_gui} to feather named "&a&lScout" with lore "&7A fast and agile explorer."
+    set slot 4 of {_gui} to diamond ore named "&a&lMiner" with lore "&7A master of the underground."
+    set slot 6 of {_gui} to iron sword named "&a&lWarrior" with lore "&7A powerful frontline fighter."
+    set slot 8 of {_gui} to bow named "&a&lArcher" with lore "&7A deadly ranged combatant."
+
+    loop 9 times:
+        set slot (8 + loop-number) of {_gui} to gray stained glass pane named " "
+
+    set slot 18 of {_gui} to lime dye named "&aPositives" with lore "&7Extra mob drops (farm animals)" and "&7Extra crop yield"
+    set slot 20 of {_gui} to lime dye named "&aPositives" with lore "&7Fast and agile" and "&7High jump"
+    set slot 22 of {_gui} to lime dye named "&aPositives" with lore "&7Increased Mining Speed" and "&7Lucky Debris Miner"
+    set slot 24 of {_gui} to lime dye named "&aPositives" with lore "&7Strength I (naturally up to Strength II)"
+    set slot 26 of {_gui} to lime dye named "&aPositives" with lore "&7Faster arrows" and "&7Enhanced bow damage"
+
+    set slot 27 of {_gui} to red dye named "&cNegatives" with lore "&7Less health" and "&7Slowness I" and "&7Weakness I"
+    set slot 29 of {_gui} to red dye named "&cNegatives" with lore "&7One less heart" and "&7Armor slows you"
+    set slot 31 of {_gui} to red dye named "&cNegatives" with lore "&7Weakness I"
+    set slot 33 of {_gui} to red dye named "&cNegatives" with lore "&7Can't brew or enchant" and "&7Can't Farm"
+    set slot 35 of {_gui} to red dye named "&cNegatives" with lore "&7One less heart" and "&7Melee deals half damage"
+
+    loop 9 times:
+        set slot (35 + loop-number) of {_gui} to gray stained glass pane named ""
+
+    set slot 45 of {_gui} to nether star named "&eAbility &8(Passive)" with lore "&7Advanced Bonemeal" and "&7Right-click crops to instagrow" and "&7starts 1x1, grows with level."
+    set slot 47 of {_gui} to nether star named "&eAbility &8(Charged Sneak)" with lore "&7Momentum Dash" and "&7Build momentum by sprinting." and "&7Sneak to launch forward." and "&7Stronger momentum = bigger dash."
+    set slot 49 of {_gui} to nether star named "&eAbility &8(Double Sneak)" with lore "&7Quake Charge" and "&7Dash forward underground," and "&7blasting through rock."
+    set slot 51 of {_gui} to nether star named "&eAbility &8(Double Sneak)" with lore "&7Battle Cry" and "&72s charge-up, then roar to" and "&7weaken and nauseate nearby enemies." and "&7Also slams the ground in a" and "&7shockwave, slowing and launching" and "&7close-range foes."
+    set slot 53 of {_gui} to nether star named "&eAbility &8(Hold Sneak)" with lore "&7Sniper's Focus" and "&7Charge your bow to" and "fire an enhanced arrow."
+
+    open {_gui} to {_p}
+
+##################################################
+# ROLE GUI CLICK
+##################################################
+on inventory click:
+    if name of event-inventory is "Choose Your Role":
+        cancel event
+
+        if {viewRoleGUI::%uuid of player%} is true:
+            send "{prefix}&7This is view-only. Use &a/roles set &7to pick your role."
+            stop
+
+        if {role::%uuid of player%} is set:
+            send "{prefix}&cYou already have a role: &a%{role::%uuid of player%}%"
+            close player's inventory
+            stop
+
+        set {clicked} to index of event-slot
+        if {clicked} is 0:
+            set {role::%uuid of player%} to "Farmer"
+        else if {clicked} is 2:
+            set {role::%uuid of player%} to "Scout"
+        else if {clicked} is 4:
+            set {role::%uuid of player%} to "Miner"
+        else if {clicked} is 6:
+            set {role::%uuid of player%} to "Warrior"
+        else if {clicked} is 8:
+            set {role::%uuid of player%} to "Archer"
+        else:
+            stop
+
+        set {roleLevel::%uuid of player%} to 0
+        send "{prefix}You chose the &a%{role::%uuid of player%}% &7role!"
+        play sound "entity.player.levelup" at player
+        send title "" with subtitle "{prefix}You are a &a%{role::%uuid of player%}%" to player
+        close player's inventory
+
+##################################################
+# CLEAR GUI FLAGS ON CLOSE
+##################################################
+on inventory close:
+    if name of event-inventory is "Choose Your Role":
+        delete {viewRoleGUI::%uuid of player%}
