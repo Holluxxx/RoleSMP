@@ -1,0 +1,17 @@
+##################################################
+# CORE: DATA LAYOUT (documentation only, no code)
+##################################################
+# {role::player-uuid}              = role name (string)
+# {roleLevel::player-uuid}         = upgrade level (0-10)
+# {rolemode}                       = "set" | "random"
+# {lastSneak::player-uuid}         = timestamp of last sneak press
+# {noFall::player-uuid}            = true while scout is airborne
+# {warcryCD::player-uuid}          = timestamp when warcry expires
+# {warcryCharging::player-uuid}    = true during 2s warcry charge-up
+# {scoutLastSneak::player-uuid}    = timestamp of last sneak while scouting
+# {momentum::player-uuid}          = Scout momentum, 0-200. Scales with level.
+# {scoutPrevLoc::player-uuid}      = last tick location for speed measurement
+# {minerDashCD::player-uuid}       = timestamp when quake charge expires
+# {viewRoleGUI::player-uuid}       = true when GUI opened as view-only
+# {brewmsg::player-uuid}           = cooldown flag for warrior restriction msg
+# {prefix}                         = shared message prefix (see core/setup.sk)

@@ -1,0 +1,14 @@
+##################################################
+# CORE: SETUP -- global prefix + startup defaults
+##################################################
+# {prefix} (file-local Skript options) can't be shared
+# across split script files, so we use a persistent
+# global variable {prefix} instead. Every other file
+# references {prefix} the same way {prefix} used to be
+# referenced.
+
+on load:
+    set {prefix} to "&8[&aRoleSMP&8] &7"
+
+    if {rolemode} is not set:
+        set {rolemode} to "set"
