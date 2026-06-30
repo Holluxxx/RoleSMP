@@ -1,0 +1,31 @@
+##################################################
+# SYSTEMS: COOLDOWNS -- passive cooldown/state cleanup
+##################################################
+
+##################################################
+# WAR CRY CANCEL (death / quit cleanup)
+##################################################
+on death:
+    if {warcryCharging::%uuid of victim%} is true:
+        delete {warcryCharging::%uuid of victim%}
+
+on quit:
+    if {warcryCharging::%uuid of player%} is true:
+        delete {warcryCharging::%uuid of player%}
+    if {scoutActive::%uuid of player%} is true:
+        if {scoutStand::%uuid of player%} is set:
+            if {scoutStand::%uuid of player%} is alive:
+                kill {scoutStand::%uuid of player%}
+        delete {scoutStand::%uuid of player%}
+        delete {scoutOrigin::%uuid of player%}
+        delete {scoutActive::%uuid of player%}
+        delete {scoutLastSneak::%uuid of player%}
+    delete {scoutDoubleJump::%uuid of player%}
+    delete {scoutInAir::%uuid of player%}
+
+##################################################
+# STUN RESTRICTION
+##################################################
+on jump:
+    if {stunned::%uuid of player%} is set:
+        cancel event

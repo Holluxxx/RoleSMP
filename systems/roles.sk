@@ -1,0 +1,162 @@
+##################################################
+# SYSTEMS: ROLES -- assign / reset / join / passive stats
+##################################################
+
+##################################################
+# JOIN SYSTEM
+##################################################
+on join:
+    wait 2 ticks
+    if {role::%uuid of player%} is set:
+        set {_lvl} to {roleLevel::%uuid of player%}
+        if {_lvl} is not set:
+            set {_lvl} to 0
+        send "{prefix}Welcome back! Role: &a%{role::%uuid of player%}% &8| &7Level: &e%{_lvl}%"
+        stop
+    if {rolemode} is "random":
+        giveRandomRole(player)
+    else:
+        send "{prefix}&eYou don't have a role yet! Opening role selection..."
+        wait 5 ticks
+        openRoleGUI(player)
+
+##################################################
+# ROLE RESET HELPERS
+##################################################
+function resetRoleStats(p: offlineplayer):
+    delete {warcryCD::%uuid of {_p}%}
+    delete {warcryCharging::%uuid of {_p}%}
+    delete {scanCD::%uuid of {_p}%}
+    delete {minerDashCD::%uuid of {_p}%}
+    delete {noFall::%uuid of {_p}%}
+    delete {momentum::%uuid of {_p}%}
+    delete {scoutPrevLoc::%uuid of {_p}%}
+    delete {scoutDoubleJump::%uuid of {_p}%}
+    delete {scoutInAir::%uuid of {_p}%}
+    if {_p} is online:
+        remove all potion effects from {_p}
+
+function clearRole(p: offlineplayer):
+    delete {role::%uuid of {_p}%}
+    delete {roleLevel::%uuid of {_p}%}
+    resetRoleStats({_p})
+    if {_p} is online:
+        set max health of {_p} to 10
+        set health of {_p} to max health of {_p}
+
+function applyBaseStats(p: player):
+    set {_role} to {role::%uuid of {_p}%}
+    if {_role} is "Farmer":
+        set max health of {_p} to 8
+    else if {_role} is "Scout":
+        set max health of {_p} to 9
+    else if {_role} is "Archer":
+        set max health of {_p} to 9
+    else:
+        set max health of {_p} to 10
+
+##################################################
+# RANDOM ROLE ASSIGNMENT
+##################################################
+function giveRandomRole(p: player):
+    set {_r} to random integer between 1 and 5
+    if {_r} is 1:
+        set {role::%uuid of {_p}%} to "Farmer"
+    else if {_r} is 2:
+        set {role::%uuid of {_p}%} to "Scout"
+    else if {_r} is 3:
+        set {role::%uuid of {_p}%} to "Miner"
+    else if {_r} is 4:
+        set {role::%uuid of {_p}%} to "Warrior"
+    else:
+        set {role::%uuid of {_p}%} to "Archer"
+    set {roleLevel::%uuid of {_p}%} to 0
+    send title "" with subtitle "{prefix}You are a &a%{role::%uuid of {_p}%}%" to {_p}
+    send "{prefix}You have been assigned the &a%{role::%uuid of {_p}%}% &7role." to {_p}
+    play sound "entity.player.levelup" at {_p}
+
+##################################################
+# ROLE EFFECTS (every 5 seconds) -- scales with level
+##################################################
+every 5 seconds:
+    loop all players:
+        set {_role} to {role::%uuid of loop-player%}
+        if {_role} is not set:
+            continue
+        set {_lvl} to {roleLevel::%uuid of loop-player%}
+        if {_lvl} is not set:
+            set {_lvl} to 0
+
+        if {_role} is "Farmer":
+            if {_lvl} <= 9:
+                set max health of loop-player to 8
+                if health of loop-player > 8:
+                    set health of loop-player to 8
+            else:
+                set max health of loop-player to 10
+                if health of loop-player > 10:
+                    set health of loop-player to 10
+            if {_lvl} <= 4:
+                apply weakness 1 to loop-player for 6 seconds
+            if {_lvl} <= 5:
+                apply slowness 1 to loop-player for 6 seconds
+            apply hero of the village 2 to loop-player for 6 seconds
+            set loop-player's block break speed attribute to 1
+            set loop-player's step height attribute to 0.6
+
+        else if {_role} is "Scout":
+            if {_lvl} <= 7:
+                set max health of loop-player to 9
+                if health of loop-player > 9:
+                    set health of loop-player to 9
+            else:
+                set max health of loop-player to 10
+                if health of loop-player > 10:
+                    set health of loop-player to 10
+                    
+            set loop-player's block break speed attribute to 1
+            set loop-player's step height attribute to 1
+
+        else if {_role} is "Miner":
+            set {_mineSpeed} to 1.6
+            if {_lvl} >= 1:
+                set {_mineSpeed} to 1.7
+            if {_lvl} >= 2:
+                set {_mineSpeed} to 1.85
+            if {_lvl} >= 3:
+                set {_mineSpeed} to 2.0
+            if {_lvl} >= 4:
+                set {_mineSpeed} to 2.2
+            if {_lvl} >= 5:
+                set {_mineSpeed} to 2.4
+            if {_lvl} >= 6:
+                set {_mineSpeed} to 2.6
+            if {_lvl} >= 7:
+                set {_mineSpeed} to 2.8
+            if {_lvl} >= 8:
+                set {_mineSpeed} to 3.0
+            if {_lvl} >= 9:
+                set {_mineSpeed} to 3.3
+            if {_lvl} >= 10:
+                set {_mineSpeed} to 4.5
+            set max health of loop-player to 10
+            set loop-player's block break speed attribute to {_mineSpeed}
+            set loop-player's step height attribute to 0.6
+            if {_lvl} <= 5:
+                apply weakness 1 to loop-player for 6 seconds
+
+        else if {_role} is "Warrior":
+            set max health of loop-player to 10
+            set loop-player's block break speed attribute to 1
+            set loop-player's step height attribute to 0.6
+            if {_lvl} >= 2:
+                apply strength 2 to loop-player for 6 seconds
+            else:
+                apply strength 1 to loop-player for 6 seconds
+
+        else if {_role} is "Archer":
+            set max health of loop-player to 9
+            if health of loop-player > 9:
+                set health of loop-player to 9
+            set loop-player's block break speed attribute to 1
+            set loop-player's step height attribute to 0.6
