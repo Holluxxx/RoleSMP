@@ -1,0 +1,175 @@
+##################################################
+# FEATURES: COMBAT -- damage interactions
+##################################################
+
+##################################################
+# ARCHER -- SHOOT (velocity, gravity delay, fire/poison tag)
+##################################################
+on shoot:
+    if projectile is not an arrow:
+        stop
+    if shooter is not a player:
+        stop
+    if {role::%uuid of shooter%} is not "Archer":
+        stop
+
+    set {_lvl} to {roleLevel::%uuid of shooter%}
+    if {_lvl} is not set:
+        set {_lvl} to 0
+
+    set {_charge} to {focusCharge::%uuid of shooter%}
+
+    set {_baseVelMult} to 1.0
+    if {_lvl} >= 1:
+        set {_baseVelMult} to 1.0
+    if {_lvl} >= 2:
+        set {_baseVelMult} to 1.1
+    if {_lvl} >= 3:
+        set {_baseVelMult} to 1.2
+    if {_lvl} >= 4:
+        set {_baseVelMult} to 1.3
+    if {_lvl} >= 5:
+        set {_baseVelMult} to 1.45
+    if {_lvl} >= 6:
+        set {_baseVelMult} to 1.6
+    if {_lvl} >= 7:
+        set {_baseVelMult} to 1.8
+    if {_lvl} >= 8:
+        set {_baseVelMult} to 2.1
+    if {_lvl} >= 9:
+        set {_baseVelMult} to 2.4
+    if {_lvl} >= 10:
+        set {_baseVelMult} to 3.0
+
+    set {_focusMaxMult} to 3.25
+    if {_lvl} >= 5:
+        set {_focusMaxMult} to 3.75
+    if {_lvl} >= 8:
+        set {_focusMaxMult} to 5.0
+
+    if {_charge} is not set:
+        set {_mult} to {_baseVelMult}
+        set {_isFocused} to false
+    else:
+        set {_maxCharge} to 16
+        if {_lvl} >= 9:
+            set {_maxCharge} to 10
+        else if {_lvl} >= 6:
+            set {_maxCharge} to 12
+        else if {_lvl} >= 3:
+            set {_maxCharge} to 14
+
+        if {_charge} >= {_maxCharge}:
+            set {_mult} to {_focusMaxMult} + 0.75
+            set {_isFocused} to true
+        else if {_charge} >= floor({_maxCharge} * 0.75):
+            set {_mult} to {_baseVelMult} + 0.5
+            set {_isFocused} to false
+        else if {_charge} >= floor({_maxCharge} * 0.5):
+            set {_mult} to {_baseVelMult} + 0.25
+            set {_isFocused} to false
+        else:
+            set {_mult} to {_baseVelMult}
+            set {_isFocused} to false
+
+    set {_vel} to velocity of projectile
+    set {_vx} to x-component of {_vel}
+    set {_vy} to y-component of {_vel}
+    set {_vz} to z-component of {_vel}
+    set velocity of projectile to vector({_vx} * {_mult}, {_vy} * {_mult}, {_vz} * {_mult})
+
+    set {_gravTicks} to 0
+    if {_lvl} >= 2:
+        set {_gravTicks} to 8
+    if {_lvl} >= 4:
+        set {_gravTicks} to 14
+    if {_lvl} >= 6:
+        set {_gravTicks} to 20
+    if {_lvl} >= 8:
+        set {_gravTicks} to 28
+    if {_lvl} >= 10:
+        set {_gravTicks} to 38
+
+    if {_gravTicks} > 0:
+        set gravity of projectile to false
+        set {_arrowRef} to projectile
+        if {_gravTicks} >= 38:
+            wait 38 ticks
+        else if {_gravTicks} >= 28:
+            wait 28 ticks
+        else if {_gravTicks} >= 20:
+            wait 20 ticks
+        else if {_gravTicks} >= 14:
+            wait 14 ticks
+        else:
+            wait 8 ticks
+        if {_arrowRef} is alive:
+            set gravity of {_arrowRef} to true
+
+    # Level 9+: mark arrow for fire on hit
+    if {_lvl} >= 9:
+        set {archerFireArrow::%uuid of projectile%} to uuid of shooter
+
+    # Level 10 focus shots apply Poison II
+    if {_lvl} >= 10:
+        if {_isFocused} is true:
+            set {archerPoisonArrow::%uuid of projectile%} to uuid of shooter
+
+    # FIX (arrow dupe): the refund + flag-clear are now adjacent, so the
+    # archerFocusReady flag can never still be true for a second shot
+    # before it's cleared. Previously this delete happened at the very
+    # bottom of the function alongside other cleanup, leaving a window
+    # where rapid-fire shots could each see the flag as true and each
+    # get a free arrow refunded.
+    if {archerFocusReady::%uuid of shooter%} is true:
+        add 1 of arrow to shooter's inventory
+        delete {archerFocusReady::%uuid of shooter%}
+
+    delete {focusCharge::%uuid of shooter%}
+    delete {focusCharging::%uuid of shooter%}
+
+##################################################
+# ARCHER -- PROJECTILE HIT (fire/poison application)
+##################################################
+# Arrow hit handling
+on projectile hit:
+    if projectile is not an arrow:
+        stop
+
+    if {archerFireArrow::%uuid of projectile%} is set:
+        if victim is a living entity:
+            set {_shooterUUID} to {archerFireArrow::%uuid of projectile%}
+            set {_lvl} to 0
+            loop all players:
+                if uuid of loop-player is {_shooterUUID}:
+                    set {_lvl} to {roleLevel::%uuid of loop-player%}
+            if {_lvl} >= 10:
+                set fire to victim for 10 seconds
+            else:
+                set fire to victim for 6 seconds
+        delete {archerFireArrow::%uuid of projectile%}
+
+    if {archerPoisonArrow::%uuid of projectile%} is set:
+        if victim is a living entity:
+            apply poison 2 to victim for 5 seconds
+        delete {archerPoisonArrow::%uuid of projectile%}
+
+##################################################
+# ARCHER -- FOCUS CLEAR ON DAMAGE TAKEN
+##################################################
+on damage of player:
+    delete {focusCharge::%uuid of victim%}
+    delete {focusCharging::%uuid of victim%}
+
+on damage of living entity:
+    if attacker is a player:
+        if {role::%uuid of attacker%} is "Archer":
+            if damage cause is entity attack:
+                set damage to damage / 2
+
+##################################################
+# SCOUT -- DAMAGE RESETS MOMENTUM
+##################################################
+on damage:
+    if {role::%uuid of victim%} is "Scout":
+        set {momentum::%uuid of victim%} to 0

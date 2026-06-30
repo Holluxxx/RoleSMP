@@ -1,0 +1,76 @@
+##################################################
+# FEATURES: LEVELING -- level cost curve + /upgrade logic
+##################################################
+
+##################################################
+# LEVEL COST FUNCTION
+##################################################
+function levelCost(lvl: number) :: number:
+    if {_lvl} is 1:
+        return 10
+    else if {_lvl} is 2:
+        return 18
+    else if {_lvl} is 3:
+        return 28
+    else if {_lvl} is 4:
+        return 40
+    else if {_lvl} is 5:
+        return 55
+    else if {_lvl} is 6:
+        return 72
+    else if {_lvl} is 7:
+        return 90
+    else if {_lvl} is 8:
+        return 110
+    else if {_lvl} is 9:
+        return 132
+    else if {_lvl} is 10:
+        return 155
+    return 9999
+
+##################################################
+# /upgrade SHORTCUT
+##################################################
+command /upgrade:
+    trigger:
+        doUpgrade(player)
+
+##################################################
+# UPGRADE LOGIC
+##################################################
+function doUpgrade(p: player):
+    if {role::%uuid of {_p}%} is not set:
+        send "{prefix}&cYou don't have a role yet!" to {_p}
+        stop
+
+    set {_lvl} to {roleLevel::%uuid of {_p}%}
+    if {_lvl} is not set:
+        set {_lvl} to 0
+
+    if {_lvl} >= 10:
+        send "{prefix}&6Your role is already at max level!" to {_p}
+        stop
+
+    set {_nextLvl} to {_lvl} + 1
+    set {_cost} to levelCost({_nextLvl})
+
+    if xp level of {_p} < {_cost}:
+        send "{prefix}&cNot enough XP! You need &e%{_cost}% levels &cto reach Level %{_nextLvl}%. &7(You have &e%xp level of {_p}%&7)" to {_p}
+        stop
+
+    set level of {_p} to level of {_p} - {_cost}
+    set {roleLevel::%uuid of {_p}%} to {_nextLvl}
+
+    send "{prefix}&aUpgraded to &e&lLevel %{_nextLvl}%&a!" to {_p}
+    play sound "entity.player.levelup" at {_p}
+    send title "&e&lLEVEL UP!" with subtitle "&7Your %{role::%uuid of {_p}%}% is now &aLevel %{_nextLvl}%" to {_p}
+
+    if {_nextLvl} >= 10:
+        send "{prefix}&6&lYou have reached &d&lMAX LEVEL&6&l for your role!" to {_p}
+        send "" to all players
+        send "&5✦ &d&lMASTERY ACHIEVEMENT&5 ✦" to all players
+        send "&d%name of {_p}% &7has become a &6MASTER &7of the" to all players
+        send "&d%{role::%uuid of {_p}%}% &7role!" to all players
+        send "" to all players
+        play sound "ui.toast.challenge_complete" at {_p}
+        play sound "minecraft:entity.ender_dragon.growl" to all players
