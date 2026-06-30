@@ -1,0 +1,44 @@
+##################################################
+# COMMANDS: ADMIN -- cooldown reset, lock clear, set level
+##################################################
+
+##################################################
+# ADMIN UTILITY COMMANDS
+##################################################
+command /resetcooldowns [<offlineplayer>]:
+    permission: op
+    trigger:
+        set {_target} to arg-1
+        if {_target} is not set:
+            set {_target} to player
+        delete {warcryCD::%uuid of {_target}%}
+        delete {warcryCharging::%uuid of {_target}%}
+        delete {scanCD::%uuid of {_target}%}
+        delete {minerDashCD::%uuid of {_target}%}
+        delete {scoutDashCD::%uuid of {_target}%}
+        send "{prefix}&aAll ability cooldowns reset for &e%{_target}%&a."
+
+command /deletelock:
+    permission: op
+    trigger:
+        delete {dashMomentumLock::%uuid of sender%}
+
+command /setrolelevel [<offlineplayer>] [<integer>]:
+    permission: op
+    trigger:
+        if arg-1 is not set:
+            send "{prefix}&cUsage: /setrolelevel <player> <level 0-10>"
+            stop 
+        if arg-2 is not set:
+            send "{prefix}&cUsage: /setrolelevel <player> <level 0-10>"
+            stop
+        set {_target} to arg-1
+        set {_level} to arg-2
+        if {_level} < 0:
+            set {_level} to 0
+        if {_level} > 10:
+            set {_level} to 10
+        set {roleLevel::%uuid of {_target}%} to {_level}
+        send "{prefix}&aSet &e%{_target}%&a's role level to &e%{_level}%&a."
+        if {_target} is online:
+            send "{prefix}&aYour role level was set to &e%{_level}%&a by an admin." to {_target}

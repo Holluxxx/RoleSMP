@@ -1,0 +1,212 @@
+##################################################
+# COMMANDS: PLAYER -- /roles, /upgrade tab, help text
+##################################################
+
+##################################################
+# HELP TEXT
+##################################################
+function rolesHelp(p: player):
+    send "&a&lRoleSMP Commands" to {_p}
+    send "&7/roles set &8- Choose or view your role" to {_p}
+    send "&7/roles gui &8- View the role GUI (read-only)" to {_p}
+    send "&7/roles view <player> &8- View another player's role" to {_p}
+    send "&7/roles levels &8- View your role upgrade chart" to {_p}
+    send "&7/roles upgrade &8- Spend XP levels to upgrade your role" to {_p}
+    send "&7/roles help &8- Show this menu" to {_p}
+    send "&7/roles mode <set/random> &8(Admin)" to {_p}
+    send "&7/roles clear <player> &8(Admin)" to {_p}
+    send "&7/roles clearall &8(Admin)" to {_p}
+    send "&7/roles force <player> <farmer/scout/miner/warrior/archer> &8(Admin)" to {_p}
+
+##################################################
+# TAB COMPLETIONS
+##################################################
+on tab complete of "/roles":
+    set {_sub} to tab complete argument 1
+
+    if player is op:
+        if {_sub} is not set:
+            set tab completions for position 1 to "set", "gui", "view", "help", "levels", "upgrade", "mode", "clear", "clearall", "force"
+            stop
+
+        set tab completions for position 1 to "set", "gui", "view", "help", "levels", "upgrade", "mode", "clear", "clearall", "force"
+
+        if {_sub} is "view" or "clear":
+            set tab completions for position 2 to all players
+
+        if {_sub} is "force":
+            set tab completions for position 2 to all players
+            set tab completions for position 3 to "farmer", "scout", "miner", "warrior", "archer"
+
+        if {_sub} is "mode":
+            set tab completions for position 2 to "set", "random"
+
+    else:
+        if {_sub} is not set:
+            set tab completions for position 1 to "set", "gui", "view", "help", "levels", "upgrade"
+            stop
+
+        set tab completions for position 1 to "set", "gui", "view", "help", "levels", "upgrade"
+
+        if {_sub} is "view":
+            set tab completions for position 2 to all players
+
+on tab complete of "/upgrade":
+    stop
+
+##################################################
+# MAIN COMMAND
+##################################################
+command /roles [<string>] [<string>] [<string>]:
+    trigger:
+        set {sub} to arg-1
+
+        if {sub} is set:
+            set {sub} to lowercase {sub}
+
+        if {sub} is not set:
+            rolesHelp(player)
+            stop
+
+        if {sub} is "help":
+            rolesHelp(player)
+            stop
+
+        if {sub} is "set":
+            if {role::%uuid of player%} is set:
+                send "{prefix}Your role: &a%{role::%uuid of player%}% &8| &7Level: &e%{roleLevel::%uuid of player%}%"
+                stop
+            if {rolemode} is "random":
+                giveRandomRole(player)
+            else:
+                openRoleGUI(player)
+            stop
+
+        if {sub} is "gui":
+            set {viewRoleGUI::%uuid of player%} to true
+            openRoleGUI(player)
+            stop
+
+        if {sub} is "levels":
+            if {role::%uuid of player%} is not set:
+                send "{prefix}&cYou don't have a role yet!"
+                stop
+            openLevelGUI(player)
+            stop
+
+        if {sub} is "upgrade":
+            doUpgrade(player)
+            stop
+
+        if {sub} is "view":
+            if argument 2 is not set:
+                send "{prefix}&cUsage: /roles view <player>"
+                stop
+            set {p} to argument 2 parsed as offline player
+            if {p} is not set:
+                send "{prefix}&cPlayer not found."
+                stop
+            if {role::%uuid of {p}%} is set:
+                set {_lvl} to {roleLevel::%uuid of {p}%}
+                if {_lvl} is not set:
+                    set {_lvl} to 0
+                send "{prefix}&a%{p}%&7's role: &a%{role::%uuid of {p}%}% &8| &7Level: &e%{_lvl}%"
+            else:
+                send "{prefix}&7That player has no role."
+            stop
+
+        if {sub} is "mode":
+            if player is not op:
+                send "{prefix}&cNo permission."
+                stop
+            if argument 2 is "set":
+                set {rolemode} to "set"
+                send "{prefix}&aRole mode set to Player Selection."
+                stop
+            if argument 2 is "random":
+                set {rolemode} to "random"
+                send "{prefix}&aRole mode set to Random Assignment."
+                stop
+            send "{prefix}&cUsage: /roles mode <set/random>"
+            stop
+
+        if {sub} is "clear":
+            if player is not op:
+                send "{prefix}&cNo permission."
+                stop
+            if argument 2 is not set:
+                send "{prefix}&cUsage: /roles clear <player>"
+                stop
+            set {p} to argument 2 parsed as offline player
+            if {p} is not set:
+                send "{prefix}&cPlayer not found."
+                stop
+            clearRole({p})
+            if {p} is online:
+                send "{prefix}Your role has been cleared." to {p}
+            send "{prefix}&aCleared role for %{p}%."
+            stop
+
+        if {sub} is "clearall":
+            if player is not op:
+                send "{prefix}&cNo permission."
+                stop
+            delete {role::*}
+            delete {roleLevel::*}
+            delete {warcryCD::*}
+            delete {warcryCharging::*}
+            delete {scanCD::*}
+            delete {scoutActive::*}
+            delete {scoutOrigin::*}
+            delete {scoutLastSneak::*}
+            delete {minerDashCD::*}
+            delete {archerArrow::*}
+            delete {noFall::*}
+            delete {viewRoleGUI::*}
+            delete {momentum::*}
+            delete {scoutPrevLoc::*}
+            delete {scoutInAir::*}
+            loop all players:
+                clearRole(loop-player)
+            broadcast "{prefix}&cAll roles have been wiped."
+            stop
+
+        if {sub} is "force":
+            if player is not op:
+                send "{prefix}&cNo permission."
+                stop
+            if argument 2 is not set:
+                send "{prefix}&cUsage: /roles force <player> <role>"
+                stop
+            if argument 3 is not set:
+                send "{prefix}&cUsage: /roles force <player> <role>"
+                stop
+            set {p} to argument 2 parsed as offline player
+            if {p} is not set:
+                send "{prefix}&cPlayer not found."
+                stop
+            set {roleName} to lowercase argument 3
+            if {roleName} is "farmer":
+                set {roleName} to "Farmer"
+            else if {roleName} is "scout":
+                set {roleName} to "Scout"
+            else if {roleName} is "miner":
+                set {roleName} to "Miner"
+            else if {roleName} is "warrior":
+                set {roleName} to "Warrior"
+            else if {roleName} is "archer":
+                set {roleName} to "Archer"
+            else:
+                send "{prefix}&cInvalid role."
+                stop
+            resetRoleStats({p})
+            set {role::%uuid of {p}%} to {roleName}
+            set {roleLevel::%uuid of {p}%} to 0
+            if {p} is online:
+                applyBaseStats({p})
+                set health of {p} to max health of {p}
+                send "{prefix}Your role was set to &a%{roleName}%&7 by an admin." to {p}
+            send "{prefix}&aForced %{p}% to role %{roleName}%."
+            stop
+
+        send "{prefix}&cUnknown subcommand."
